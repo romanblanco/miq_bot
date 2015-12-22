@@ -42,6 +42,17 @@ class CommitMonitorHandlers::CommitRange::RubocopChecker
       unmerged_results << linter_results('haml-lint', :reporter => 'json', nil => files)
     end
 
+    files = filter_css_files(diff_details)
+    if files.any?
+      unmerged_results << linter_results('scss_lint', :format => 'json', nil => files)
+    end
+
+    files = filter_javascript_files(diff_details)
+    if files.any?
+      unmerged_results << linter_results('jslint-v8', nil => '--json', nil => files)
+      unmerged_results << linter_results(asset_path 'jscs.js', :reporter => 'json', nil => files)
+    end
+
     unmerged_results.compact!
     if unmerged_results.empty?
       @results = {"files" => []}
@@ -74,6 +85,18 @@ class CommitMonitorHandlers::CommitRange::RubocopChecker
   def filter_haml_files(diff_details)
     diff_details.keys.select do |k|
       k.end_with?(".haml")
+    end
+  end
+
+  def filter_css_files(diff_details)
+    diff_details.keys.select do |k|
+      k.end_with?(".scss")
+    end
+  end
+
+  def filter_javascript_files(diff_details)
+    diff_details.keys.select do |k|
+      k.end_with?(".js")
     end
   end
 
